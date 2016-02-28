@@ -1,0 +1,95 @@
+<html>
+
+<head>
+	<title>Wolves</title>
+	<link rel="stylesheet" type="text/css" href="lib/bootstrap.min.css">
+	<script src="lib/jquery-2.2.0.js"></script>
+	<script src="lib/agentbase.js"></script>
+	<script src="lib/coffee-script.js"></script>
+	<script src="lib/bootstrap.min.js"></script>
+	<script src="wolves.js"></script>
+</head>
+
+<body>
+	<div class="container-fluid" style="max-width: 1000px">
+		<div class="row">
+			<div class="col-sm-8">
+				<div id="world"></div>
+			</div>
+			<div class="col-sm-4">
+				<h3>Level <span id="spn_level"></span></h3>
+				<label>Time:</label>
+				<span class="badge"><span id="spn_time"></span></span>
+				<br/>
+				<label>Hunted:</label>
+				<span id="spn_hunted"></span>
+				<br/>
+				<label>Status:</label>
+				<span id="spn_status"></span>
+				<br/>
+				<label>Energy:</label>
+				<div id="div_energy"></div>
+			</div>
+		</div>
+		<div class="row">
+			<button id="btn_start" class="btn btn-primary" onclick="start()">Start</button>
+			<button id="btn_stop" class="btn btn-danger" onclick="stop()">Pause</button>
+			<button id="btn_reset" class="btn btn-default" onclick="reset()">Try again</button>
+			<button id="btn_refresh" class="btn btn-default" onclick="refresh()">Start a new game</button>
+			<!-- <input type="range" onchange="change_rate(this.value)" min="1" max="100" value="30" /> -->
+		</div>
+		<!-- Modal initial -->
+		<div class="modal fade" id="initial_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" onkeydown="key_down(event, 1)">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">New Game</h4>
+					</div>
+					<div class="modal-body">
+						Use the arrows of the keyboard to move the alpha of the pack
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" data-dismiss="modal" id="btn_modal_1" onclick="start()">Start</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Modal lost -->
+		<div class="modal fade" id="lost_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" onkeydown="key_down(event, 2)">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">Game Over</h4>
+					</div>
+					<div class="modal-body">
+						<span id="spn_lost_modal">Your wolves have died.</span>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" data-dismiss="modal" id="btn_modal_2" onclick="reset()">Try again</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Modal won -->
+		<div class="modal fade" id="won_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" onkeydown="key_down(event, 3)">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">You won</h4>
+					</div>
+					<div class="modal-body">
+						Your wolves are growing stronger.
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" data-dismiss="modal" id="btn_modal_3" onclick="reset()">Next level</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>
