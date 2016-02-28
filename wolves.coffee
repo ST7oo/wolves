@@ -1,8 +1,17 @@
 
 class WolvesModel extends ABM.Model
 	u = ABM.util
-	# startup: ->
-	# 	u.shapes.add "cc", true, u.importImage("images/coffee.png")
+	startup: ->
+		u.shapes.add "shape1", true, (ctx) ->
+			ctx.beginPath()
+			ctx.moveTo(.5,0)
+			ctx.lineTo(-.25,-.445)
+			ctx.lineTo(-.25,.445)
+			ctx.closePath();
+			ctx.fill();
+			ctx.beginPath()
+			ctx.arc 0, 0, .5, .65*Math.PI, 1.35*Math.PI
+			ctx.fill()
 	setup: ->
 		# Variables
 		#general
@@ -62,16 +71,18 @@ class WolvesModel extends ABM.Model
 		#defaults
 		@wolves.setDefault "color", @color_wolf
 		@wolves.setDefault "size", @size_wolf
+		@wolves.setDefault "shape", "shape1"
 		@deer.setDefault "color", @color_deer
 		@deer.setDefault "size", @size_deer
 		@deer.setDefault "fight_back", @fight_back_deer
+		@deer.setDefault "shape", "shape1"
 		@moose.setDefault "color", @color_moose
 		@moose.setDefault "size", @size_moose
 		@moose.setDefault "fight_back", @fight_back_moose
-		# @moose.setDefault "shape", u.shapes.cc
+		@moose.setDefault "shape", "shape1"
 		@enemy_wolves.setDefault "color", @color_enemy_wolf
 		@enemy_wolves.setDefault "size", @size_wolf
-		# @wolves.setDefault "energy", 0
+		@enemy_wolves.setDefault "shape", "shape1"
 
 		for patch in @patches.create()
 			patch.color = u.color.random type: "gray", min: 10, max: 30
@@ -397,7 +408,7 @@ class WolvesModel extends ABM.Model
 
 $ ->
 	#Variables
-	level = 0
+	level = 2
 	times = [60,90,100,110]
 	num_hunt = [4,6,7,7]
 	num_wolves = [7,7,7,7]
@@ -405,7 +416,7 @@ $ ->
 	num_moose = [0,5,7,5]
 	num_enemy_wolves = [0,0,5,5]
 	clumsiness_deer = [115,100,95,90]
-	clumsiness_moose = [110,110,105,100]
+	clumsiness_moose = [110,110,108,102]
 	fight_back_wolf = [3,3,3,3]
 	fight_back_deer = [0,0,0,0]
 	fight_back_moose = [0,1.3,1.3,1.4]

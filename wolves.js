@@ -15,6 +15,20 @@
 
     u = ABM.util;
 
+    WolvesModel.prototype.startup = function() {
+      return u.shapes.add("shape1", true, function(ctx) {
+        ctx.beginPath();
+        ctx.moveTo(.5, 0);
+        ctx.lineTo(-.25, -.445);
+        ctx.lineTo(-.25, .445);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, 0, .5, .65 * Math.PI, 1.35 * Math.PI);
+        return ctx.fill();
+      });
+    };
+
     WolvesModel.prototype.setup = function() {
       var j, len, patch, ref, results;
       this.rate = 35;
@@ -65,14 +79,18 @@
       this.agentBreeds(["wolves", "deer", "moose", "enemy_wolves"]);
       this.wolves.setDefault("color", this.color_wolf);
       this.wolves.setDefault("size", this.size_wolf);
+      this.wolves.setDefault("shape", "shape1");
       this.deer.setDefault("color", this.color_deer);
       this.deer.setDefault("size", this.size_deer);
       this.deer.setDefault("fight_back", this.fight_back_deer);
+      this.deer.setDefault("shape", "shape1");
       this.moose.setDefault("color", this.color_moose);
       this.moose.setDefault("size", this.size_moose);
       this.moose.setDefault("fight_back", this.fight_back_moose);
+      this.moose.setDefault("shape", "shape1");
       this.enemy_wolves.setDefault("color", this.color_enemy_wolf);
       this.enemy_wolves.setDefault("size", this.size_wolf);
+      this.enemy_wolves.setDefault("shape", "shape1");
       ref = this.patches.create();
       results = [];
       for (j = 0, len = ref.length; j < len; j++) {
@@ -553,7 +571,7 @@
 
   $(function() {
     var clumsiness_deer, clumsiness_moose, countdown, fight_back_deer, fight_back_moose, fight_back_wolf, level, model, num_deer, num_enemy_wolves, num_hunt, num_moose, num_wolves, playing, set_model_level, times, timing;
-    level = 0;
+    level = 2;
     times = [60, 90, 100, 110];
     num_hunt = [4, 6, 7, 7];
     num_wolves = [7, 7, 7, 7];
@@ -561,7 +579,7 @@
     num_moose = [0, 5, 7, 5];
     num_enemy_wolves = [0, 0, 5, 5];
     clumsiness_deer = [115, 100, 95, 90];
-    clumsiness_moose = [110, 110, 105, 100];
+    clumsiness_moose = [110, 110, 108, 102];
     fight_back_wolf = [3, 3, 3, 3];
     fight_back_deer = [0, 0, 0, 0];
     fight_back_moose = [0, 1.3, 1.3, 1.4];
