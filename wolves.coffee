@@ -1,7 +1,10 @@
 
 class WolvesModel extends ABM.Model
+	#shortcut for utilities
 	u = ABM.util
+
 	startup: ->
+		#create the default shape
 		u.shapes.add "shape1", true, (ctx) ->
 			ctx.beginPath()
 			ctx.moveTo(.5,0)
@@ -12,22 +15,24 @@ class WolvesModel extends ABM.Model
 			ctx.beginPath()
 			ctx.arc 0, 0, .5, .65*Math.PI, 1.35*Math.PI
 			ctx.fill()
+
 	setup: ->
 		# Variables
 		#general
 		@rate = 35
 		@energy_per_tick_eating = 0.5
 		@energy_per_tick_resting = 0.1
-		@num_hunt = 0
-		@last_level = false
 		#auxiliar
 		@fraction = 1.5
 		@fraction_rate = @rate * @fraction
 		@resting1 = 0
 		@resting2 = 0
 		@eating1 = false
+		@eating2 = false
 		@move = false
 		@hunted = 0
+		@num_hunt = 0
+		@last_level = false
 		#wolves
 		@size_wolf = 1.9
 		@walk_speed_wolf = 8
@@ -64,6 +69,7 @@ class WolvesModel extends ABM.Model
 		@fight_back_wolf = 3
 		@color_enemy_wolf = u.color.lightslategray
 
+		#config
 		@animator.setRate @rate
 		@refreshPatches = false
 		@agentBreeds ["wolves", "deer", "moose", "enemy_wolves"]
@@ -84,12 +90,14 @@ class WolvesModel extends ABM.Model
 		@enemy_wolves.setDefault "size", @size_wolf
 		@enemy_wolves.setDefault "shape", "shape1"
 
+		#create patches
 		for patch in @patches.create()
-			patch.color = u.color.random type: "gray", min: 10, max: 30
+			patch.color = u.color.random type: "gray", min: 10, max: 20
 
 		
 
 	step: ->
+		#check if player has won or lost
 		@end_game()
 
 		# Wolves
@@ -120,7 +128,7 @@ class WolvesModel extends ABM.Model
 					if i > 0
 						@follow1(wolf, i-1)
 			else
-				#resting
+				#end hunting and rest
 				if @hunting1[1] > @max_time_hunting
 					@change_label "status", "Resting"
 					@eating1 = false
@@ -201,7 +209,7 @@ class WolvesModel extends ABM.Model
 	end_game: () ->
 		if @hunted is @num_hunt
 			@win_game()
-		if @wolves.length < @num_to_die_deer-1
+		if @wolves.length < 1
 			@lose_game("Your wolves have died.")
 
 	win_game: () ->
@@ -280,6 +288,7 @@ class WolvesModel extends ABM.Model
 
 	# Wolves
 
+	#search for preys and move (if auto, rotates automatically)
 	roam: (alpha, auto) ->
 		preys = alpha.neighbors(radius: @vision_wolf).exclude("wolves enemy_wolves")
 		if preys.any()
@@ -296,28 +305,34 @@ class WolvesModel extends ABM.Model
 				@change_energy(alpha, -@energy_lose)
 				alpha.forward @walk_speed_wolf/@fraction_rate
 			
+	#follow the previous wolf
 	follow1: (wolf, index) ->
 		following = @wolves[index]
 		wolf.face following.position
+		#only move if the wolf following is too far
 		if @move and !wolf.neighbors(radius: 2).contains(following)
 			wolf.forward @walk_speed_wolf/@fraction_rate
 			@change_energy(wolf, -@energy_lose)
 			
+	#follow (enemy_wolves)
 	follow2: (wolf, index) ->
 		following = @enemy_wolves[index]
 		wolf.face following.position
 		if !wolf.neighbors(radius: 2).contains(following)
 			wolf.forward @walk_speed_wolf/@fraction_rate
 
+	#move towards the prey
 	hunt1: (wolf) ->
 		wolf.face @hunting1[0].position
 		wolf.forward u.randomNormal(@run_speed_mean_wolf, @run_speed_sd_wolf)/@fraction_rate
 		@change_energy(wolf, -@hunting_energy)
 
+	#move towards the prey (enemy_wolves)
 	hunt2: (wolf) ->
 		wolf.face @hunting2[0].position
 		wolf.forward u.randomNormal(@run_speed_mean_wolf, @run_speed_sd_wolf)/@fraction_rate
 
+	#increase energy and animation
 	eat1: (wolf) ->
 		@change_energy(wolf, @energy_per_tick_eating)
 		if @resting1 % 2 is 0
@@ -327,6 +342,7 @@ class WolvesModel extends ABM.Model
 				degrees = -degrees
 			wolf.rotate u.degreesToRadians(degrees)
 
+	#animation (enemy_wolves)
 	eat2: (wolf) ->
 		if @resting2 % 2 is 0
 			degrees = 25
@@ -334,12 +350,14 @@ class WolvesModel extends ABM.Model
 				degrees = -degrees
 			wolf.rotate u.degreesToRadians(degrees)
 
+	#small chance to get hurt
 	get_hurt: (wolf, max_damage) ->
 		hurt_energy = u.randomNormal 0, max_damage
 		if hurt_energy > max_damage/1.5
 			wolf.color = u.color.darkred
 			@change_energy(wolf, -hurt_energy)
 
+	#kill agent
 	die_wolf: (wolf) ->
 		if @wolves.indexOf(wolf) is 0
 			#change alpha
@@ -352,6 +370,7 @@ class WolvesModel extends ABM.Model
 	        0)
 		wolf.die()
 
+	#start forming a circle
 	form_circle: (agents, radius, start_point) ->
 		dTheta = 2 * Math.PI / agents.length
 		startAngle = Math.PI / 2
@@ -361,6 +380,7 @@ class WolvesModel extends ABM.Model
 			agent.heading = startAngle + direction * dTheta * i
 			agent.forward radius
 
+	#get hurt if there are at least 2 enemy wolves
 	fight_other_wolves: (wolf) ->
 		enemy_wolves = wolf.neighbors(radius: 2).exclude("deer moose wolves")
 		if enemy_wolves.length >= 2
@@ -369,25 +389,29 @@ class WolvesModel extends ABM.Model
 		
 	# Preys
 
+	#move randomly
 	wiggle: (prey, walk_speed) ->
 		prey.rotate u.randomCentered u.degreesToRadians(20)
 		prey.forward u.randomFloat 0, walk_speed/@fraction_rate
 
+	#get the average position of the predators,
+	#face it and rotate 180 degrees with a delta of clumsiness,
+	#and run
 	run_away: (prey, predators, run_speed_mean, run_speed_sd, clumsiness) ->
-		nearest_predator = predators.min(((p) -> p.distance prey.position))
-		ang = u.angle(prey.position, nearest_predator.position, @patches)
 		positions = predators.getProperty "position"
 		avg_position_x = (p.x for p in positions).reduce((a, b) -> a + b) / predators.length
 		avg_position_y = (p.y for p in positions).reduce((a, b) -> a + b) / predators.length
 		avg_position = {x: avg_position_x, y: avg_position_y}
-		angle_avg = u.angle(prey.position, avg_position, @patches)
 		prey.face avg_position
 		prey.rotate u.degreesToRadians u.randomInt 180-clumsiness, 180+clumsiness
 		prey.forward u.randomNormal(run_speed_mean, run_speed_sd)/@fraction_rate
 
+	#if it is sorrounded by at least the number required to die,
+	#the prey dies and the predators eat
 	die_prey: (prey, num_to_die, time_eating) ->
 		if @hunting1? and prey is @hunting1[0] and prey.neighbors(radius: 1).exclude("deer moose enemy_wolves").length >= num_to_die
 			@change_label "status", "Eating"
+			#if enemy wolves were hunting the same prey
 			if @hunting2? and prey is @hunting2[0]
 				@hunting2 = null
 			prey.die()
@@ -397,6 +421,7 @@ class WolvesModel extends ABM.Model
 			@hunted++
 			@change_label "hunted", @hunted+"/"+@num_hunt
 		else if @hunting2? and prey is @hunting2[0] and prey.neighbors(radius: 1).exclude("deer moose wolves").length >= num_to_die
+			#if wolves were hunting the same prey
 			if @hunting1? and prey is @hunting1[0]
 				@hunting1 = null
 			prey.die()
@@ -408,10 +433,10 @@ class WolvesModel extends ABM.Model
 
 $ ->
 	#Variables
-	level = 2
+	#settings for levels
 	times = [60,90,100,110]
 	num_hunt = [4,6,7,7]
-	num_wolves = [7,7,7,7]
+	num_wolves = [6,7,7,7]
 	num_deer = [15,12,13,10]
 	num_moose = [0,5,7,5]
 	num_enemy_wolves = [0,0,5,5]
@@ -420,8 +445,13 @@ $ ->
 	fight_back_wolf = [3,3,3,3]
 	fight_back_deer = [0,0,0,0]
 	fight_back_moose = [0,1.3,1.3,1.4]
+	#starting level
+	level = 0
+	#game is being played
 	playing = false
+	#time countdown
 	timing = times[level]
+	#model with settings
 	model = new WolvesModel {
 	  div: "world",
 	  patchSize: 9,
@@ -429,6 +459,7 @@ $ ->
 	  isTorus: true
 	}
 
+	#Functions
 	set_model_level = () ->
 		model.set_level(
 			num_hunt[level],
@@ -466,9 +497,6 @@ $ ->
 	@key_down = (event, num_btn) ->
 		if event.keyCode is 13
 			$('#btn_modal_'+num_btn).click()
-	@change_rate = (value) ->
-		console.log value
-		model.animator.setRate value
 	countdown = () ->
 		timing--
 		$('#spn_time').text timing
@@ -479,6 +507,7 @@ $ ->
 			setTimeout ->
 				countdown()
 			, 1000
+	#Events
 	$('#won_modal').on 'show.bs.modal', ->
 		playing = false
 		level++

@@ -34,15 +34,16 @@
       this.rate = 35;
       this.energy_per_tick_eating = 0.5;
       this.energy_per_tick_resting = 0.1;
-      this.num_hunt = 0;
-      this.last_level = false;
       this.fraction = 1.5;
       this.fraction_rate = this.rate * this.fraction;
       this.resting1 = 0;
       this.resting2 = 0;
       this.eating1 = false;
+      this.eating2 = false;
       this.move = false;
       this.hunted = 0;
+      this.num_hunt = 0;
+      this.last_level = false;
       this.size_wolf = 1.9;
       this.walk_speed_wolf = 8;
       this.run_speed_mean_wolf = 47 / this.fraction;
@@ -98,7 +99,7 @@
         results.push(patch.color = u.color.random({
           type: "gray",
           min: 10,
-          max: 30
+          max: 20
         }));
       }
       return results;
@@ -267,7 +268,7 @@
       if (this.hunted === this.num_hunt) {
         this.win_game();
       }
-      if (this.wolves.length < this.num_to_die_deer - 1) {
+      if (this.wolves.length < 1) {
         return this.lose_game("Your wolves have died.");
       }
     };
@@ -500,11 +501,7 @@
     };
 
     WolvesModel.prototype.run_away = function(prey, predators, run_speed_mean, run_speed_sd, clumsiness) {
-      var ang, angle_avg, avg_position, avg_position_x, avg_position_y, nearest_predator, p, positions;
-      nearest_predator = predators.min((function(p) {
-        return p.distance(prey.position);
-      }));
-      ang = u.angle(prey.position, nearest_predator.position, this.patches);
+      var avg_position, avg_position_x, avg_position_y, p, positions;
       positions = predators.getProperty("position");
       avg_position_x = ((function() {
         var j, len, results;
@@ -532,7 +529,6 @@
         x: avg_position_x,
         y: avg_position_y
       };
-      angle_avg = u.angle(prey.position, avg_position, this.patches);
       prey.face(avg_position);
       prey.rotate(u.degreesToRadians(u.randomInt(180 - clumsiness, 180 + clumsiness)));
       return prey.forward(u.randomNormal(run_speed_mean, run_speed_sd) / this.fraction_rate);
@@ -571,10 +567,9 @@
 
   $(function() {
     var clumsiness_deer, clumsiness_moose, countdown, fight_back_deer, fight_back_moose, fight_back_wolf, level, model, num_deer, num_enemy_wolves, num_hunt, num_moose, num_wolves, playing, set_model_level, times, timing;
-    level = 2;
     times = [60, 90, 100, 110];
     num_hunt = [4, 6, 7, 7];
-    num_wolves = [7, 7, 7, 7];
+    num_wolves = [6, 7, 7, 7];
     num_deer = [15, 12, 13, 10];
     num_moose = [0, 5, 7, 5];
     num_enemy_wolves = [0, 0, 5, 5];
@@ -583,6 +578,7 @@
     fight_back_wolf = [3, 3, 3, 3];
     fight_back_deer = [0, 0, 0, 0];
     fight_back_moose = [0, 1.3, 1.3, 1.4];
+    level = 0;
     playing = false;
     timing = times[level];
     model = new WolvesModel({
@@ -623,10 +619,6 @@
       if (event.keyCode === 13) {
         return $('#btn_modal_' + num_btn).click();
       }
-    };
-    this.change_rate = function(value) {
-      console.log(value);
-      return model.animator.setRate(value);
     };
     countdown = function() {
       timing--;

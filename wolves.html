@@ -5,7 +5,6 @@
 	<link rel="stylesheet" type="text/css" href="lib/bootstrap.min.css">
 	<script src="lib/jquery-2.2.0.js"></script>
 	<script src="lib/agentbase.js"></script>
-	<script src="lib/coffee-script.js"></script>
 	<script src="lib/bootstrap.min.js"></script>
 	<script src="wolves.js"></script>
 </head>
@@ -13,9 +12,11 @@
 <body>
 	<div class="container-fluid" style="max-width: 1000px">
 		<div class="row">
+			<!-- game screen -->
 			<div class="col-sm-8">
 				<div id="world"></div>
 			</div>
+			<!-- stats -->
 			<div class="col-sm-4">
 				<h3>Level <span id="spn_level"></span></h3>
 				<label>Time:</label>
@@ -31,12 +32,14 @@
 				<div id="div_energy"></div>
 			</div>
 		</div>
+		<!-- buttons -->
 		<div class="row">
-			<button id="btn_start" class="btn btn-primary" onclick="start()">Start</button>
-			<button id="btn_stop" class="btn btn-danger" onclick="stop()">Pause</button>
-			<button id="btn_reset" class="btn btn-default" onclick="reset()">Try again</button>
-			<button id="btn_refresh" class="btn btn-default" onclick="refresh()">Start a new game</button>
-			<!-- <input type="range" onchange="change_rate(this.value)" min="1" max="100" value="30" /> -->
+			<div style="margin-left: 15px">
+				<button id="btn_start" class="btn btn-success" onclick="start()">Start</button>
+				<button id="btn_stop" class="btn btn-danger" onclick="stop()">Pause</button>
+				<button id="btn_reset" class="btn btn-primary" onclick="reset()">Try again</button>
+				<button id="btn_refresh" class="btn btn-primary" onclick="refresh()">Start a new game</button>
+			</div>
 		</div>
 		<!-- Modal initial -->
 		<div class="modal fade" id="initial_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" onkeydown="key_down(event, 1)">
@@ -47,7 +50,15 @@
 						<h4 class="modal-title" id="myModalLabel">New Game</h4>
 					</div>
 					<div class="modal-body">
-						Use the arrows of the keyboard to move the alpha of the pack
+						Use the arrows of the keyboard to move the alpha of the pack.
+						<br>
+						Up: start moving
+						<br>
+						Down: stop moving
+						<br>
+						Left: rotate to left
+						<br>
+						Right: rotate to right
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-primary" data-dismiss="modal" id="btn_modal_1" onclick="start()">Start</button>
